@@ -1,0 +1,67 @@
+config:
+    target: "https://localhost:8443/api"
+    tls:
+      rejectUnauthorized: false
+    phases:
+      - duration: 40
+        arrivalRate: 5
+    http:
+      pool: 8
+    payload:
+      - path: "tweets.csv"
+        fields:
+          - "content"
+          - "image_link"
+      - path: "users.csv"
+        fields:
+          - "id"
+          - "username"
+          - "password"
+    ensure:
+      p95: 100
+      maxErrorRate: 0
+scenarios:
+  - name: "Escenario 1: Consulta del primer Tweet"
+    weight: 1
+    flow:
+    - get:
+        url: "/tweets/"
+        capture: 
+          json: "$[0].id"
+          as: "id"
+    - get:
+        url: "/tweets/{{ id }}"
+  - name: "Escenario 2: Creación de un Tweet"
+    weight: 2
+    flow:
+    - get: 
+        url: "/logIn"
+        auth:
+          user: "{{ username }}"
+          pass: "{{ password }}"
+    - post:
+        url: "/tweets/"
+        json:
+          content: "{{ content }}"
+          image_link: "{{ image_link }}" 
+        capture: 
+          json: "$.id"
+          as: "id"
+    - get:
+        url: "/tweets/{{ id }}"
+  - name: "Escenario 3: Borrado de un Tweet propio"
+    weight: 6
+    flow:
+    - get: 
+        url: "/logIn"
+        auth:
+          user: "{{ username }}"
+          pass: "{{ password }}"
+    - get:
+        url: "/users/{{ id }}"
+        capture: 
+          json: "$.tweets[0].id"
+          as: "idTweet"
+    - delete:
+        url: "/tweets/{{ idTweet }}"
+        ifTrue: "idTweet"
