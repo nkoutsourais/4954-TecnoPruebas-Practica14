@@ -28,9 +28,9 @@ scenarios:
         url: "/tweets/"
         capture: 
           json: "$[0].id"
-          as: "id"
+          as: "idTweet"
     - get:
-        url: "/tweets/{{ id }}"
+        url: "/tweets/{{ idTweet }}"
   - name: "Escenario 2: Creación de un Tweet"
     weight: 2
     flow:
@@ -46,9 +46,9 @@ scenarios:
           image_link: "{{ image_link }}" 
         capture: 
           json: "$.id"
-          as: "id"
+          as: "idTweet"
     - get:
-        url: "/tweets/{{ id }}"
+        url: "/tweets/{{ idTweet }}"
   - name: "Escenario 3: Borrado de un Tweet propio"
     weight: 6
     flow:
